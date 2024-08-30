@@ -45,6 +45,11 @@ const Index = () => {
     });
   };
 
+  const updateQueueAndSort = (updatedQueue) => {
+    const sortedQueue = sortQueue(updatedQueue);
+    setQueue(sortedQueue);
+  };
+
   const addPlayerToQueue = () => {
     if (playerName.trim() !== '') {
       const timestamp = Date.now();
