@@ -179,10 +179,10 @@ const Index = () => {
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Enter your name"
+            placeholder="Enter your name (min 2 characters)"
             className="flex-grow"
           />
-          <Button onClick={addPlayerToQueue}>Join Queue</Button>
+          <Button onClick={addPlayerToQueue} disabled={playerName.trim().length < 2}>Join Queue</Button>
         </div>
       </div>
 
