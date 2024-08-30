@@ -50,7 +50,7 @@ const Index = () => {
       const timestamp = Date.now();
       const updatedQueue = [...queue, playerName];
       setPlayerTimestamps(prev => ({...prev, [playerName]: timestamp}));
-      setQueue(sortQueue(updatedQueue));
+      updateQueueAndSort(updatedQueue);
       setPlayerStats(prev => ({...prev, [playerName]: 0}));
       setPlayerName('');
     }
@@ -71,27 +71,26 @@ const Index = () => {
           removedPlayers = court.players.slice(0, count);
           remainingPlayers = court.players.slice(count);
         }
-        setQueue(prevQueue => {
-          const timestamp = Date.now();
-          const updatedQueue = [...prevQueue, ...removedPlayers];
-          setPlayerTimestamps(prev => {
-            const newTimestamps = {...prev};
-            removedPlayers.forEach(player => {
-              if (!newTimestamps[player]) {
-                newTimestamps[player] = timestamp;
-              }
-            });
-            return newTimestamps;
+      
+        const timestamp = Date.now();
+        setPlayerTimestamps(prev => {
+          const newTimestamps = {...prev};
+          removedPlayers.forEach(player => {
+            newTimestamps[player] = timestamp;
           });
-          setPlayerStats(prev => {
-            const newStats = {...prev};
-            removedPlayers.forEach(player => {
-              newStats[player] = (newStats[player] || 0) + 1;
-            });
-            return newStats;
-          });
-          return sortQueue(updatedQueue);
+          return newTimestamps;
         });
+      
+        setPlayerStats(prev => {
+          const newStats = {...prev};
+          removedPlayers.forEach(player => {
+            newStats[player] = (newStats[player] || 0) + 1;
+          });
+          return newStats;
+        });
+      
+        updateQueueAndSort([...queue, ...removedPlayers]);
+      
         return { ...court, players: remainingPlayers, checkedPlayers: {} };
       }
       return court;
@@ -119,10 +118,8 @@ const Index = () => {
         return c;
       }));
 
-      setQueue(prevQueue => {
-        const updatedQueue = prevQueue.filter(player => !playersToAdd.includes(player));
-        return sortQueue(updatedQueue);
-      });
+      const updatedQueue = queue.filter(player => !playersToAdd.includes(player));
+      updateQueueAndSort(updatedQueue);
       setSelectedPlayers([]);
     }
   };
@@ -136,10 +133,8 @@ const Index = () => {
   };
 
   const removePlayerFromQueue = (playerToRemove) => {
-    setQueue(prevQueue => {
-      const updatedQueue = prevQueue.filter(player => player !== playerToRemove);
-      return sortQueue(updatedQueue);
-    });
+    const updatedQueue = queue.filter(player => player !== playerToRemove);
+    updateQueueAndSort(updatedQueue);
     setSelectedPlayers(prevSelected => prevSelected.filter(player => player !== playerToRemove));
     setPlayerStats(prev => {
       const newStats = {...prev};
