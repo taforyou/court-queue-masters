@@ -54,10 +54,12 @@ const Index = () => {
   const addPlayerToQueue = () => {
     if (playerName.trim().length >= 2) {
       const timestamp = Date.now();
-      const updatedQueue = [...queue, playerName];
+      setQueue(prevQueue => {
+        const updatedQueue = [...prevQueue, playerName];
+        return sortQueue(updatedQueue, playerStats, {...playerTimestamps, [playerName]: timestamp});
+      });
       setPlayerTimestamps(prev => ({...prev, [playerName]: timestamp}));
       setPlayerStats(prev => ({...prev, [playerName]: { completed: 0, current: 0 }}));
-      updateQueueAndSort(updatedQueue);
       setPlayerName('');
     } else {
       toast({
@@ -172,8 +174,10 @@ const Index = () => {
   };
 
   const removePlayerFromQueue = (playerToRemove) => {
-    const updatedQueue = queue.filter(player => player !== playerToRemove);
-    updateQueueAndSort(updatedQueue);
+    setQueue(prevQueue => {
+      const updatedQueue = prevQueue.filter(player => player !== playerToRemove);
+      return sortQueue(updatedQueue, playerStats, playerTimestamps);
+    });
     setSelectedPlayers(prevSelected => prevSelected.filter(player => player !== playerToRemove));
     setPlayerStats(prev => {
       const newStats = {...prev};
