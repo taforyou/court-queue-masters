@@ -37,10 +37,10 @@ const Index = () => {
     return updatedQueue.sort((a, b) => {
       const statsA = playerStats[a]?.completed || 0;
       const statsB = playerStats[b]?.completed || 0;
-      if (statsA === statsB) {
-        return playerTimestamps[a] - playerTimestamps[b];
+      if (statsA !== statsB) {
+        return statsA - statsB;
       }
-      return statsA - statsB;
+      return playerTimestamps[a] - playerTimestamps[b];
     });
   };
 
@@ -54,8 +54,8 @@ const Index = () => {
       const timestamp = Date.now();
       const updatedQueue = [...queue, playerName];
       setPlayerTimestamps(prev => ({...prev, [playerName]: timestamp}));
-      updateQueueAndSort(updatedQueue);
       setPlayerStats(prev => ({...prev, [playerName]: { completed: 0, current: 0 }}));
+      updateQueueAndSort(updatedQueue);
       setPlayerName('');
     } else {
       toast({
@@ -87,16 +87,7 @@ const Index = () => {
           removedPlayers = court.players.slice(0, count);
           remainingPlayers = court.players.slice(count);
         }
-      
-        const timestamp = Date.now();
-        setPlayerTimestamps(prev => {
-          const newTimestamps = {...prev};
-          removedPlayers.forEach(player => {
-            newTimestamps[player] = timestamp;
-          });
-          return newTimestamps;
-        });
-      
+
         setPlayerStats(prev => {
           const newStats = {...prev};
           removedPlayers.forEach(player => {
@@ -107,15 +98,15 @@ const Index = () => {
           });
           remainingPlayers.forEach(player => {
             newStats[player] = {
-              completed: (newStats[player]?.completed || 0) + 1,
-              current: 1
+              ...newStats[player],
+              current: 2
             };
           });
           return newStats;
         });
-      
+
         updateQueueAndSort([...queue, ...removedPlayers]);
-      
+
         return { ...court, players: remainingPlayers, checkedPlayers: {} };
       }
       return court;
@@ -185,7 +176,7 @@ const Index = () => {
   return (
     <div className="min-h-screen p-4 sm:p-8 bg-gray-100">
       <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-center">Badminton Match Manager</h1>
-  
+
       <div className="mb-6 sm:mb-8">
         <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Join Queue</h2>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
@@ -220,8 +211,12 @@ const Index = () => {
                       />
                       <label htmlFor={`player-${court.id}-${index}`} className="flex items-center">
                         <span>{player}</span>
-                        <span className="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold bg-blue-500 text-white">
-                          {playerStats[player]?.completed + 1 || 1}
+                        <span className={`ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
+                          playerStats[player]?.current === 2
+                            ? 'bg-yellow-500 text-white'
+                            : 'bg-blue-500 text-white'
+                        }`}>
+                          {playerStats[player]?.completed + playerStats[player]?.current || 1}
                         </span>
                       </label>
                     </li>
