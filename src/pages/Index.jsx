@@ -35,17 +35,12 @@ const Index = () => {
 
   const sortQueue = (updatedQueue, currentPlayerStats, currentPlayerTimestamps) => {
     return updatedQueue.sort((a, b) => {
-      const statsA = currentPlayerStats[a]?.completed || 0;
-      const statsB = currentPlayerStats[b]?.completed || 0;
-      if (statsA === 0 && statsB === 0) {
+      const statsA = currentPlayerStats[a] || 0;
+      const statsB = currentPlayerStats[b] || 0;
+      if (statsA === statsB) {
         return currentPlayerTimestamps[a] - currentPlayerTimestamps[b];
       }
-      if (statsA === 0) return -1;
-      if (statsB === 0) return 1;
-      if (statsA !== statsB) {
-        return statsA - statsB;
-      }
-      return currentPlayerTimestamps[a] - currentPlayerTimestamps[b];
+      return statsA - statsB;
     });
   };
 
@@ -60,7 +55,7 @@ const Index = () => {
       setPlayerTimestamps(prev => {
         const updatedTimestamps = {...prev, [playerName]: timestamp};
         setPlayerStats(prevStats => {
-          const updatedStats = {...prevStats, [playerName]: { completed: 0, current: 0 }};
+          const updatedStats = {...prevStats, [playerName]: 0};
           setQueue(prevQueue => {
             const updatedQueue = [...prevQueue, playerName];
             updateQueueAndSort(updatedQueue, updatedStats, updatedTimestamps);
@@ -107,16 +102,8 @@ const Index = () => {
 
           setPlayerStats(prev => {
             const newStats = {...prev};
-            // Update stats for all players on the court
             court.players.forEach(player => {
-              newStats[player] = {
-                completed: (newStats[player]?.completed || 0) + 1,
-                current: 0
-              };
-            });
-            // Set current to 1 for remaining players
-            remainingPlayers.forEach(player => {
-              newStats[player].current = 1;
+              newStats[player] = (newStats[player] || 0) + 1;
             });
             return newStats;
           });
@@ -168,17 +155,6 @@ const Index = () => {
         }
         return c;
       }));
-
-      setPlayerStats(prevStats => {
-        const newStats = {...prevStats};
-        playersToAdd.forEach(player => {
-          newStats[player] = {
-            ...newStats[player],
-            current: 1
-          };
-        });
-        return newStats;
-      });
 
       setQueue(prevQueue => {
         const updatedQueue = prevQueue.filter(player => !playersToAdd.includes(player));
@@ -260,12 +236,8 @@ const Index = () => {
                       />
                       <label htmlFor={`player-${court.id}-${index}`} className="flex items-center">
                         <span>{player}</span>
-                        <span className={`ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
-                          playerStats[player]?.current === 2
-                            ? 'bg-yellow-500 text-white'
-                            : 'bg-blue-500 text-white'
-                        }`}>
-                          {(playerStats[player]?.completed || 0) + (playerStats[player]?.current || 0)}
+                        <span className="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold bg-blue-500 text-white">
+                          {playerStats[player] || 0}
                         </span>
                       </label>
                     </li>
@@ -308,13 +280,11 @@ const Index = () => {
                 <label htmlFor={`queue-player-${index}`} className="flex-grow flex items-center justify-between">
                   <span>{player}</span>
                   <span className={`ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
-                    playerStats[player]?.current > 0
-                      ? 'bg-blue-500 text-white'
-                      : playerStats[player]?.completed > 0
+                    playerStats[player] > 0
                       ? 'bg-green-500 text-white'
                       : 'bg-gray-300 text-gray-600'
                   }`}>
-                    {playerStats[player]?.completed || 0}
+                    {playerStats[player] || 0}
                   </span>
                 </label>
                 <Button
