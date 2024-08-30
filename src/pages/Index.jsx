@@ -107,16 +107,14 @@ const Index = () => {
 
           setPlayerStats(prev => {
             const newStats = {...prev};
-            // Update stats for all players on the court
             court.players.forEach(player => {
               newStats[player] = {
                 completed: (newStats[player]?.completed || 0) + 1,
                 current: 0
               };
             });
-            // Set current to 1 for remaining players
             remainingPlayers.forEach(player => {
-              newStats[player].current = 1;
+              newStats[player].current = 2;
             });
             return newStats;
           });
