@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -18,7 +17,6 @@ const Index = () => {
   const [playerName, setPlayerName] = useState('');
   const [playerTimestamps, setPlayerTimestamps] = useState({});
   const [selectedPlayers, setSelectedPlayers] = useState([]);
-  const [playerCountToAdd, setPlayerCountToAdd] = useState(2);
   const { toast } = useToast();
 
   const handleCheckboxChange = (courtId, playerIndex) => {
@@ -233,21 +231,6 @@ const Index = () => {
           <CardTitle>Queue</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="mb-4">
-            <Label>Players to add:</Label>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {[1, 2, 3, 4].map((count) => (
-                <Button
-                  key={count}
-                  variant={playerCountToAdd === count ? "default" : "outline"}
-                  onClick={() => setPlayerCountToAdd(count)}
-                  className="flex-grow sm:flex-grow-0"
-                >
-                  {count} Player{count !== 1 ? 's' : ''}
-                </Button>
-              ))}
-            </div>
-          </div>
           <ul className="space-y-2">
             {queue.map((player, index) => (
               <li key={index} className="flex items-center space-x-2">
