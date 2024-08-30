@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,17 +7,6 @@ import { Trash2, Feather, PlusCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const response = await fetch('/api/auth', { method: 'GET' });
-      if (!response.ok) {
-        navigate('/login');
-      }
-    };
-    checkAuth();
-  }, [navigate]);
   const [courts, setCourts] = useState([
     { id: 1, players: [], checkedPlayers: {} },
     { id: 2, players: [], checkedPlayers: {} },
