@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Feather } from "lucide-react";
+import { Trash2, Feather, PlusCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
@@ -14,6 +14,23 @@ const Index = () => {
   const [queue, setQueue] = useState([]);
   const [playerStats, setPlayerStats] = useState({});
   const [shuttlecockCount, setShuttlecockCount] = useState({});
+
+  const incrementShuttlecockCount = (courtId) => {
+    setCourts(prevCourts => {
+      const updatedCourts = prevCourts.map(court => {
+        if (court.id === courtId) {
+          court.players.forEach(player => {
+            setShuttlecockCount(prevCount => ({
+              ...prevCount,
+              [player]: (prevCount[player] || 0) + 1
+            }));
+          });
+        }
+        return court;
+      });
+      return updatedCourts;
+    });
+  };
   const [playerName, setPlayerName] = useState('');
   const [playerTimestamps, setPlayerTimestamps] = useState({});
   const [selectedPlayers, setSelectedPlayers] = useState([]);
@@ -246,8 +263,19 @@ const Index = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
         {courts.map((court) => (
           <Card key={court.id}>
-            <CardHeader>
-              <CardTitle>Court {court.id}</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Court {court.id}</CardTitle>
+              <div className="flex items-center space-x-2">
+                <Feather className="h-4 w-4 text-gray-500" />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 rounded-full"
+                  onClick={() => incrementShuttlecockCount(court.id)}
+                >
+                  <PlusCircle className="h-4 w-4 text-green-500" />
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
