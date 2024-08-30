@@ -33,33 +33,34 @@ const Index = () => {
     return Object.values(court.checkedPlayers).filter(Boolean).length;
   };
 
-  const sortQueue = (updatedQueue, currentStats, currentTimestamps) => {
+  const sortQueue = (updatedQueue) => {
     return updatedQueue.sort((a, b) => {
-      const statsA = currentStats[a]?.completed || 0;
-      const statsB = currentStats[b]?.completed || 0;
+      const statsA = playerStats[a]?.completed || 0;
+      const statsB = playerStats[b]?.completed || 0;
       if (statsA === 0 && statsB === 0) {
-        return currentTimestamps[a] - currentTimestamps[b];
+        return playerTimestamps[a] - playerTimestamps[b];
       }
       if (statsA === 0) return -1;
       if (statsB === 0) return 1;
       if (statsA !== statsB) {
         return statsA - statsB;
       }
-      return currentTimestamps[a] - currentTimestamps[b];
+      return playerTimestamps[a] - playerTimestamps[b];
     });
   };
 
-  // Remove updateQueueAndSort function as it's no longer needed
+  const updateQueueAndSort = (updatedQueue) => {
+    const sortedQueue = sortQueue(updatedQueue);
+    setQueue(sortedQueue);
+  };
 
   const addPlayerToQueue = () => {
     if (playerName.trim().length >= 2) {
       const timestamp = Date.now();
-      setQueue(prevQueue => {
-        const updatedQueue = [...prevQueue, playerName];
-        return sortQueue(updatedQueue, playerStats, {...playerTimestamps, [playerName]: timestamp});
-      });
+      const updatedQueue = [...queue, playerName];
       setPlayerTimestamps(prev => ({...prev, [playerName]: timestamp}));
       setPlayerStats(prev => ({...prev, [playerName]: { completed: 0, current: 0 }}));
+      updateQueueAndSort(updatedQueue);
       setPlayerName('');
     } else {
       toast({
@@ -77,56 +78,53 @@ const Index = () => {
   };
 
   const removePlayersFromCourt = (courtId, count) => {
-    setCourts(prevCourts => {
-      const updatedCourts = prevCourts.map(court => {
-        if (court.id === courtId) {
-          let removedPlayers;
-          let remainingPlayers;
-          if (count === 2) {
-            const checkedIndices = Object.entries(court.checkedPlayers)
-              .filter(([_, isChecked]) => isChecked)
-              .map(([index]) => parseInt(index));
-            removedPlayers = checkedIndices.map(index => court.players[index]);
-            remainingPlayers = court.players.filter((_, index) => !checkedIndices.includes(index));
-          } else {
-            removedPlayers = court.players.slice(0, count);
-            remainingPlayers = court.players.slice(count);
-          }
-
-          return { ...court, players: remainingPlayers, checkedPlayers: {} };
+    setCourts(courts.map(court => {
+      if (court.id === courtId) {
+        let removedPlayers;
+        let remainingPlayers;
+        if (count === 2) {
+          const checkedIndices = Object.entries(court.checkedPlayers)
+            .filter(([_, isChecked]) => isChecked)
+            .map(([index]) => parseInt(index));
+          removedPlayers = checkedIndices.map(index => court.players[index]);
+          remainingPlayers = court.players.filter((_, index) => !checkedIndices.includes(index));
+        } else {
+          removedPlayers = court.players.slice(0, count);
+          remainingPlayers = court.players.slice(count);
         }
-        return court;
-      });
 
-      const removedPlayers = updatedCourts.find(c => c.id === courtId).players;
-      const currentTime = Date.now();
-
-      setPlayerStats(prevStats => {
-        const newStats = {...prevStats};
-        removedPlayers.forEach(player => {
-          newStats[player] = {
-            completed: (newStats[player]?.completed || 0) + 1,
-            current: 0
-          };
+        const currentTime = Date.now();
+        setPlayerStats(prev => {
+          const newStats = {...prev};
+          removedPlayers.forEach(player => {
+            newStats[player] = {
+              completed: (newStats[player]?.completed || 0) + 1,
+              current: 0
+            };
+          });
+          remainingPlayers.forEach(player => {
+            newStats[player] = {
+              ...newStats[player],
+              current: 2
+            };
+          });
+          return newStats;
         });
-        return newStats;
-      });
 
-      setPlayerTimestamps(prevTimestamps => {
-        const newTimestamps = {...prevTimestamps};
-        removedPlayers.forEach((player, index) => {
-          newTimestamps[player] = currentTime + index;
+        setPlayerTimestamps(prev => {
+          const newTimestamps = {...prev};
+          removedPlayers.forEach((player, index) => {
+            newTimestamps[player] = currentTime + index;
+          });
+          return newTimestamps;
         });
-        return newTimestamps;
-      });
 
-      setQueue(prevQueue => {
-        const updatedQueue = [...prevQueue, ...removedPlayers];
-        return sortQueue(updatedQueue);
-      });
+        updateQueueAndSort([...queue, ...removedPlayers]);
 
-      return updatedCourts;
-    });
+        return { ...court, players: remainingPlayers, checkedPlayers: {} };
+      }
+      return court;
+    }));
   };
 
   const addPlayersToCourt = (courtId) => {
@@ -159,10 +157,8 @@ const Index = () => {
         return newStats;
       });
 
-      setQueue(prevQueue => {
-        const updatedQueue = prevQueue.filter(player => !playersToAdd.includes(player));
-        return sortQueue(updatedQueue, playerStats, playerTimestamps);
-      });
+      const updatedQueue = queue.filter(player => !playersToAdd.includes(player));
+      updateQueueAndSort(updatedQueue);
       setSelectedPlayers([]);
     }
   };
@@ -176,10 +172,8 @@ const Index = () => {
   };
 
   const removePlayerFromQueue = (playerToRemove) => {
-    setQueue(prevQueue => {
-      const updatedQueue = prevQueue.filter(player => player !== playerToRemove);
-      return sortQueue(updatedQueue, playerStats, playerTimestamps);
-    });
+    const updatedQueue = queue.filter(player => player !== playerToRemove);
+    updateQueueAndSort(updatedQueue);
     setSelectedPlayers(prevSelected => prevSelected.filter(player => player !== playerToRemove));
     setPlayerStats(prev => {
       const newStats = {...prev};
