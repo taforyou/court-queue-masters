@@ -159,8 +159,10 @@ const Index = () => {
         return newStats;
       });
 
-      const updatedQueue = queue.filter(player => !playersToAdd.includes(player));
-      updateQueueAndSort(updatedQueue);
+      setQueue(prevQueue => {
+        const updatedQueue = prevQueue.filter(player => !playersToAdd.includes(player));
+        return sortQueue(updatedQueue, playerStats, playerTimestamps);
+      });
       setSelectedPlayers([]);
     }
   };
