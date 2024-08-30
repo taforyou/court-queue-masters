@@ -105,34 +105,32 @@ const Index = () => {
 
           const currentTime = Date.now();
 
-          setPlayerStats(prevPlayerStats => {
-            const newPlayerStats = {...prevPlayerStats};
-            removedPlayers.forEach(player => {
-              newPlayerStats[player] = {
-                completed: (newPlayerStats[player]?.completed || 0) + 1,
+          setPlayerStats(prev => {
+            const newStats = {...prev};
+            // Update stats for all players on the court
+            court.players.forEach(player => {
+              newStats[player] = {
+                completed: (newStats[player]?.completed || 0) + 1,
                 current: 0
               };
             });
+            // Set current to 1 for remaining players
             remainingPlayers.forEach(player => {
-              newPlayerStats[player] = {
-                ...newPlayerStats[player],
-                current: 2
-              };
+              newStats[player].current = 1;
             });
-            return newPlayerStats;
+            return newStats;
           });
 
-          setPlayerTimestamps(prevPlayerTimestamps => {
-            const newPlayerTimestamps = {...prevPlayerTimestamps};
+          setPlayerTimestamps(prev => {
+            const newTimestamps = {...prev};
             removedPlayers.forEach((player, index) => {
-              newPlayerTimestamps[player] = currentTime + index;
+              newTimestamps[player] = currentTime + index;
             });
-            return newPlayerTimestamps;
+            return newTimestamps;
           });
 
           setQueue(prevQueue => {
             const updatedQueue = [...prevQueue, ...removedPlayers];
-            // Use the callback form of setState to ensure we're using the latest state
             setPlayerStats(latestPlayerStats => {
               setPlayerTimestamps(latestPlayerTimestamps => {
                 updateQueueAndSort(updatedQueue, latestPlayerStats, latestPlayerTimestamps);
@@ -267,7 +265,7 @@ const Index = () => {
                             ? 'bg-yellow-500 text-white'
                             : 'bg-blue-500 text-white'
                         }`}>
-                          {playerStats[player]?.completed + playerStats[player]?.current || 1}
+                          {(playerStats[player]?.completed || 0) + (playerStats[player]?.current || 0)}
                         </span>
                       </label>
                     </li>
