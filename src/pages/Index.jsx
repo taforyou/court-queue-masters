@@ -2,14 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Index = () => {
   const [courts, setCourts] = useState([
-    { id: 1, players: [] },
-    { id: 2, players: [] },
+    { id: 1, players: [], checkedPlayers: {} },
+    { id: 2, players: [], checkedPlayers: {} },
   ]);
   const [queue, setQueue] = useState([]);
   const [playerName, setPlayerName] = useState('');
+
+  const handleCheckboxChange = (courtId, playerIndex) => {
+    setCourts(courts.map(court => {
+      if (court.id === courtId) {
+        const newCheckedPlayers = { ...court.checkedPlayers };
+        newCheckedPlayers[playerIndex] = !newCheckedPlayers[playerIndex];
+        return { ...court, checkedPlayers: newCheckedPlayers };
+      }
+      return court;
+    }));
+  };
+
+  const getCheckedPlayersCount = (court) => {
+    return Object.values(court.checkedPlayers).filter(Boolean).length;
+  };
 
   const addPlayerToQueue = () => {
     if (playerName.trim() !== '') {
@@ -21,10 +37,20 @@ const Index = () => {
   const removePlayersFromCourt = (courtId, count) => {
     setCourts(courts.map(court => {
       if (court.id === courtId) {
-        const removedPlayers = court.players.slice(0, count);
-        const remainingPlayers = court.players.slice(count);
+        let removedPlayers;
+        let remainingPlayers;
+        if (count === 2) {
+          const checkedIndices = Object.entries(court.checkedPlayers)
+            .filter(([_, isChecked]) => isChecked)
+            .map(([index]) => parseInt(index));
+          removedPlayers = checkedIndices.map(index => court.players[index]);
+          remainingPlayers = court.players.filter((_, index) => !checkedIndices.includes(index));
+        } else {
+          removedPlayers = court.players.slice(0, count);
+          remainingPlayers = court.players.slice(count);
+        }
         setQueue(prevQueue => [...prevQueue, ...removedPlayers]);
-        return { ...court, players: remainingPlayers };
+        return { ...court, players: remainingPlayers, checkedPlayers: {} };
       }
       return court;
     }));
@@ -73,12 +99,22 @@ const Index = () => {
                 <h3 className="font-semibold">Current Players:</h3>
                 <ul>
                   {court.players.map((player, index) => (
-                    <li key={index}>{player}</li>
+                    <li key={index} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`player-${court.id}-${index}`}
+                        checked={court.checkedPlayers[index] || false}
+                        onCheckedChange={() => handleCheckboxChange(court.id, index)}
+                      />
+                      <label htmlFor={`player-${court.id}-${index}`}>{player}</label>
+                    </li>
                   ))}
                 </ul>
               </div>
               <div className="space-x-2">
-                <Button onClick={() => removePlayersFromCourt(court.id, 2)}>
+                <Button
+                  onClick={() => removePlayersFromCourt(court.id, 2)}
+                  disabled={getCheckedPlayersCount(court) !== 2}
+                >
                   Remove 2 Players
                 </Button>
                 <Button onClick={() => removePlayersFromCourt(court.id, 4)}>
