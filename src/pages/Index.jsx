@@ -200,8 +200,8 @@ const Index = () => {
                   checked={selectedPlayers.includes(player)}
                   onCheckedChange={() => handlePlayerSelection(player)}
                 />
-                <label htmlFor={`queue-player-${index}`} className="flex-grow flex items-center">
-                  {player}
+                <label htmlFor={`queue-player-${index}`} className="flex-grow flex items-center justify-between">
+                  <span>{player}</span>
                   <span className={`ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${playerStats[player] > 0 ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'}`}>
                     {playerStats[player] || 0}
                   </span>
