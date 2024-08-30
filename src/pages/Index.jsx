@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -36,8 +35,8 @@ const Index = () => {
 
   const sortQueue = (updatedQueue) => {
     return updatedQueue.sort((a, b) => {
-      const statsA = playerStats[a] || 0;
-      const statsB = playerStats[b] || 0;
+      const statsA = playerStats[a]?.completed || 0;
+      const statsB = playerStats[b]?.completed || 0;
       if (statsA === statsB) {
         return playerTimestamps[a] - playerTimestamps[b];
       }
@@ -56,7 +55,7 @@ const Index = () => {
       const updatedQueue = [...queue, playerName];
       setPlayerTimestamps(prev => ({...prev, [playerName]: timestamp}));
       updateQueueAndSort(updatedQueue);
-      setPlayerStats(prev => ({...prev, [playerName]: 0}));
+      setPlayerStats(prev => ({...prev, [playerName]: { completed: 0, current: 0 }}));
       setPlayerName('');
     } else {
       toast({
@@ -101,7 +100,16 @@ const Index = () => {
         setPlayerStats(prev => {
           const newStats = {...prev};
           removedPlayers.forEach(player => {
-            newStats[player] = (newStats[player] || 0) + 1;
+            newStats[player] = {
+              completed: (newStats[player]?.completed || 0) + 1,
+              current: 0
+            };
+          });
+          remainingPlayers.forEach(player => {
+            newStats[player] = {
+              completed: (newStats[player]?.completed || 0) + 1,
+              current: 1
+            };
           });
           return newStats;
         });
@@ -120,10 +128,8 @@ const Index = () => {
     let playersToAdd = [];
 
     if (selectedPlayers.length === 0) {
-      // If no players are selected, use first-come-first-serve
       playersToAdd = queue.slice(0, availableSlots);
     } else {
-      // Use selected players, but limit to available slots
       playersToAdd = selectedPlayers.slice(0, availableSlots);
     }
 
@@ -134,6 +140,17 @@ const Index = () => {
         }
         return c;
       }));
+
+      setPlayerStats(prev => {
+        const newStats = {...prev};
+        playersToAdd.forEach(player => {
+          newStats[player] = {
+            ...newStats[player],
+            current: 1
+          };
+        });
+        return newStats;
+      });
 
       const updatedQueue = queue.filter(player => !playersToAdd.includes(player));
       updateQueueAndSort(updatedQueue);
@@ -201,7 +218,12 @@ const Index = () => {
                         checked={court.checkedPlayers[index] || false}
                         onCheckedChange={() => handleCheckboxChange(court.id, index)}
                       />
-                      <label htmlFor={`player-${court.id}-${index}`}>{player}</label>
+                      <label htmlFor={`player-${court.id}-${index}`} className="flex items-center">
+                        <span>{player}</span>
+                        <span className="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold bg-blue-500 text-white">
+                          {playerStats[player]?.completed + 1 || 1}
+                        </span>
+                      </label>
                     </li>
                   ))}
                 </ul>
@@ -241,8 +263,14 @@ const Index = () => {
                 />
                 <label htmlFor={`queue-player-${index}`} className="flex-grow flex items-center justify-between">
                   <span>{player}</span>
-                  <span className={`ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${playerStats[player] > 0 ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'}`}>
-                    {playerStats[player] || 0}
+                  <span className={`ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
+                    playerStats[player]?.current > 0
+                      ? 'bg-blue-500 text-white'
+                      : playerStats[player]?.completed > 0
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gray-300 text-gray-600'
+                  }`}>
+                    {playerStats[player]?.completed || 0}
                   </span>
                 </label>
                 <Button
