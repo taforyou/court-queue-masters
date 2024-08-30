@@ -186,7 +186,7 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
         {courts.map((court) => (
           <Card key={court.id}>
             <CardHeader>
