@@ -15,6 +15,7 @@ const Index = () => {
   const [queue, setQueue] = useState([]);
   const [playerStats, setPlayerStats] = useState({});
   const [playerName, setPlayerName] = useState('');
+  const [playerTimestamps, setPlayerTimestamps] = useState({});
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [playerCountToAdd, setPlayerCountToAdd] = useState(2);
 
@@ -35,8 +36,17 @@ const Index = () => {
 
   const addPlayerToQueue = () => {
     if (playerName.trim() !== '') {
+      const timestamp = Date.now();
       const updatedQueue = [...queue, playerName];
-      const sortedQueue = updatedQueue.sort((a, b) => (playerStats[a] || 0) - (playerStats[b] || 0));
+      setPlayerTimestamps(prev => ({...prev, [playerName]: timestamp}));
+      const sortedQueue = updatedQueue.sort((a, b) => {
+        const statsA = playerStats[a] || 0;
+        const statsB = playerStats[b] || 0;
+        if (statsA === statsB) {
+          return playerTimestamps[a] - playerTimestamps[b];
+        }
+        return statsA - statsB;
+      });
       setQueue(sortedQueue);
       setPlayerStats(prev => ({...prev, [playerName]: 0}));
       setPlayerName('');
@@ -59,10 +69,23 @@ const Index = () => {
           remainingPlayers = court.players.slice(count);
         }
         setQueue(prevQueue => {
+          const timestamp = Date.now();
           const updatedQueue = [...prevQueue, ...removedPlayers];
+          setPlayerTimestamps(prev => {
+            const newTimestamps = {...prev};
+            removedPlayers.forEach(player => {
+              if (!newTimestamps[player]) {
+                newTimestamps[player] = timestamp;
+              }
+            });
+            return newTimestamps;
+          });
           return updatedQueue.sort((a, b) => {
             const statsA = playerStats[a] || 0;
             const statsB = playerStats[b] || 0;
+            if (statsA === statsB) {
+              return playerTimestamps[a] - playerTimestamps[b];
+            }
             return statsA - statsB;
           });
         });
@@ -119,6 +142,9 @@ const Index = () => {
       return updatedQueue.sort((a, b) => {
         const statsA = playerStats[a] || 0;
         const statsB = playerStats[b] || 0;
+        if (statsA === statsB) {
+          return playerTimestamps[a] - playerTimestamps[b];
+        }
         return statsA - statsB;
       });
     });
@@ -127,6 +153,11 @@ const Index = () => {
       const newStats = {...prev};
       delete newStats[playerToRemove];
       return newStats;
+    });
+    setPlayerTimestamps(prev => {
+      const newTimestamps = {...prev};
+      delete newTimestamps[playerToRemove];
+      return newTimestamps;
     });
   };
 
