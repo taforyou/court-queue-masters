@@ -13,6 +13,7 @@ const Index = () => {
   ]);
   const [queue, setQueue] = useState([]);
   const [playerStats, setPlayerStats] = useState({});
+  const [shuttlecockCount, setShuttlecockCount] = useState({});
   const [playerName, setPlayerName] = useState('');
   const [playerTimestamps, setPlayerTimestamps] = useState({});
   const [selectedPlayers, setSelectedPlayers] = useState([]);
@@ -61,6 +62,7 @@ const Index = () => {
         const updatedTimestamps = {...prev, [playerName]: timestamp};
         setPlayerStats(prevStats => {
           const updatedStats = {...prevStats, [playerName]: { completed: 0, current: 0 }};
+          setShuttlecockCount(prevCount => ({...prevCount, [playerName]: 0}));
           setQueue(prevQueue => {
             const updatedQueue = [...prevQueue, playerName];
             updateQueueAndSort(updatedQueue, updatedStats, updatedTimestamps);
@@ -261,13 +263,19 @@ const Index = () => {
                         />
                         <label htmlFor={`player-${court.id}-${index}`}>{player}</label>
                       </div>
-                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
-                        playerStats[player]?.current === 2
-                          ? 'bg-yellow-500 text-white'
-                          : 'bg-blue-500 text-white'
-                      }`}>
-                        {(playerStats[player]?.completed || 0) + (playerStats[player]?.current || 0)}
-                      </span>
+                      <div className="flex items-center space-x-2">
+                        <div className="flex flex-col items-center">
+                          <Feather className="h-4 w-4 text-gray-500" />
+                          <span className="text-xs text-gray-500">{shuttlecockCount[player] || 0}</span>
+                        </div>
+                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
+                          playerStats[player]?.current === 2
+                            ? 'bg-yellow-500 text-white'
+                            : 'bg-blue-500 text-white'
+                        }`}>
+                          {(playerStats[player]?.completed || 0) + (playerStats[player]?.current || 0)}
+                        </span>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -310,7 +318,7 @@ const Index = () => {
                   <div className="flex items-center space-x-2">
                     <div className="flex flex-col items-center">
                       <Feather className="h-4 w-4 text-gray-500" />
-                      <span className="text-xs text-gray-500">0</span>
+                      <span className="text-xs text-gray-500">{shuttlecockCount[player] || 0}</span>
                     </div>
                     <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
                       playerStats[player]?.current > 0
