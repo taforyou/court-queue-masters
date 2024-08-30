@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2 } from "lucide-react";
+import { Trash2, Feather } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
@@ -307,15 +307,21 @@ const Index = () => {
                 />
                 <label htmlFor={`queue-player-${index}`} className="flex-grow flex items-center justify-between">
                   <span>{player}</span>
-                  <span className={`ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
-                    playerStats[player]?.current > 0
-                      ? 'bg-blue-500 text-white'
-                      : playerStats[player]?.completed > 0
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-300 text-gray-600'
-                  }`}>
-                    {playerStats[player]?.completed || 0}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex flex-col items-center">
+                      <Feather className="h-4 w-4 text-gray-500" />
+                      <span className="text-xs text-gray-500">0</span>
+                    </div>
+                    <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
+                      playerStats[player]?.current > 0
+                        ? 'bg-blue-500 text-white'
+                        : playerStats[player]?.completed > 0
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-300 text-gray-600'
+                    }`}>
+                      {playerStats[player]?.completed || 0}
+                    </span>
+                  </div>
                 </label>
                 <Button
                   variant="ghost"
