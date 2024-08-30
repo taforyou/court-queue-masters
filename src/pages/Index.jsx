@@ -15,7 +15,7 @@ const Index = () => {
   const [queue, setQueue] = useState([]);
   const [playerName, setPlayerName] = useState('');
   const [selectedPlayers, setSelectedPlayers] = useState([]);
-  const [playerCountToAdd, setPlayerCountToAdd] = useState('2');
+  const [playerCountToAdd, setPlayerCountToAdd] = useState(2);
 
   const handleCheckboxChange = (courtId, playerIndex) => {
     setCourts(courts.map(court => {
@@ -64,7 +64,15 @@ const Index = () => {
   const addPlayersToCourt = (courtId) => {
     const court = courts.find(c => c.id === courtId);
     const availableSlots = 4 - court.players.length;
-    const playersToAdd = selectedPlayers.slice(0, Math.min(parseInt(playerCountToAdd), availableSlots));
+    let playersToAdd = [];
+
+    if (selectedPlayers.length === 0) {
+      // If no players are selected, use first-come-first-serve
+      playersToAdd = queue.slice(0, availableSlots);
+    } else {
+      // Use selected players, but limit to available slots
+      playersToAdd = selectedPlayers.slice(0, availableSlots);
+    }
 
     if (playersToAdd.length > 0) {
       setCourts(courts.map(c => {
@@ -157,20 +165,18 @@ const Index = () => {
         </CardHeader>
         <CardContent>
           <div className="mb-4">
-            <Label htmlFor="playerCountSelect">Players to add:</Label>
-            <Select
-              id="playerCountSelect"
-              value={playerCountToAdd}
-              onValueChange={setPlayerCountToAdd}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select number of players" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="2">2 Players</SelectItem>
-                <SelectItem value="4">4 Players</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label>Players to add:</Label>
+            <div className="flex space-x-2 mt-2">
+              {[1, 2, 3, 4].map((count) => (
+                <Button
+                  key={count}
+                  variant={playerCountToAdd === count ? "default" : "outline"}
+                  onClick={() => setPlayerCountToAdd(count)}
+                >
+                  {count} Player{count !== 1 ? 's' : ''}
+                </Button>
+              ))}
+            </div>
           </div>
           <ul>
             {queue.map((player, index) => (
