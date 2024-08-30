@@ -264,7 +264,7 @@ const Index = () => {
         {courts.map((court) => (
           <Card key={court.id}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Court {court.id}</CardTitle>
+              <CardTitle className="text-xl font-semibold">Court {court.id}</CardTitle>
               <div className="flex items-center space-x-2">
                 <Feather className="h-4 w-4 text-gray-500" />
                 <Button
