@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Trash2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const [courts, setCourts] = useState([
@@ -18,6 +19,7 @@ const Index = () => {
   const [playerTimestamps, setPlayerTimestamps] = useState({});
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [playerCountToAdd, setPlayerCountToAdd] = useState(2);
+  const { toast } = useToast();
 
   const handleCheckboxChange = (courtId, playerIndex) => {
     setCourts(courts.map(court => {
@@ -51,13 +53,25 @@ const Index = () => {
   };
 
   const addPlayerToQueue = () => {
-    if (playerName.trim() !== '') {
+    if (playerName.trim().length >= 2) {
       const timestamp = Date.now();
       const updatedQueue = [...queue, playerName];
       setPlayerTimestamps(prev => ({...prev, [playerName]: timestamp}));
       updateQueueAndSort(updatedQueue);
       setPlayerStats(prev => ({...prev, [playerName]: 0}));
       setPlayerName('');
+    } else {
+      toast({
+        title: "Invalid Name",
+        description: "Name must be at least 2 characters long.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      addPlayerToQueue();
     }
   };
 
@@ -164,6 +178,7 @@ const Index = () => {
             type="text"
             value={playerName}
             onChange={(e) => setPlayerName(e.target.value)}
+            onKeyPress={handleKeyPress}
             placeholder="Enter your name"
             className="flex-grow"
           />
