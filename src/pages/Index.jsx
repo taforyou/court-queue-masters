@@ -108,7 +108,7 @@ const Index = () => {
           remainingPlayers.forEach(player => {
             newStats[player] = {
               completed: (newStats[player]?.completed || 0) + 1,
-              current: 1
+              current: 2  // Changed to 2 to indicate remaining players
             };
           });
           return newStats;
@@ -264,7 +264,9 @@ const Index = () => {
                 <label htmlFor={`queue-player-${index}`} className="flex-grow flex items-center justify-between">
                   <span>{player}</span>
                   <span className={`ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
-                    playerStats[player]?.current > 0
+                    playerStats[player]?.current === 2
+                      ? 'bg-yellow-500 text-white'
+                      : playerStats[player]?.current === 1
                       ? 'bg-blue-500 text-white'
                       : playerStats[player]?.completed > 0
                       ? 'bg-green-500 text-white'
