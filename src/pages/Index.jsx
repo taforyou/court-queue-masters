@@ -252,22 +252,22 @@ const Index = () => {
                 <h3 className="font-semibold">Current Players:</h3>
                 <ul>
                   {court.players.map((player, index) => (
-                    <li key={index} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`player-${court.id}-${index}`}
-                        checked={court.checkedPlayers[index] || false}
-                        onCheckedChange={() => handleCheckboxChange(court.id, index)}
-                      />
-                      <label htmlFor={`player-${court.id}-${index}`} className="flex items-center">
-                        <span>{player}</span>
-                        <span className={`ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
-                          playerStats[player]?.current === 2
-                            ? 'bg-yellow-500 text-white'
-                            : 'bg-blue-500 text-white'
-                        }`}>
-                          {(playerStats[player]?.completed || 0) + (playerStats[player]?.current || 0)}
-                        </span>
-                      </label>
+                    <li key={index} className="flex items-center justify-between space-x-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`player-${court.id}-${index}`}
+                          checked={court.checkedPlayers[index] || false}
+                          onCheckedChange={() => handleCheckboxChange(court.id, index)}
+                        />
+                        <label htmlFor={`player-${court.id}-${index}`}>{player}</label>
+                      </div>
+                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
+                        playerStats[player]?.current === 2
+                          ? 'bg-yellow-500 text-white'
+                          : 'bg-blue-500 text-white'
+                      }`}>
+                        {(playerStats[player]?.completed || 0) + (playerStats[player]?.current || 0)}
+                      </span>
                     </li>
                   ))}
                 </ul>
