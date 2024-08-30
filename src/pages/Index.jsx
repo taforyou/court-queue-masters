@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 const Index = () => {
   const [courts, setCourts] = useState([
@@ -11,6 +13,8 @@ const Index = () => {
   ]);
   const [queue, setQueue] = useState([]);
   const [playerName, setPlayerName] = useState('');
+  const [selectedPlayers, setSelectedPlayers] = useState([]);
+  const [playerCountToAdd, setPlayerCountToAdd] = useState('2');
 
   const handleCheckboxChange = (courtId, playerIndex) => {
     setCourts(courts.map(court => {
@@ -57,17 +61,29 @@ const Index = () => {
   };
 
   const addPlayersToCourt = (courtId) => {
-    if (queue.length >= 4) {
-      const playersToAdd = queue.slice(0, 4);
-      const newQueue = queue.slice(4);
-      setCourts(courts.map(court => {
-        if (court.id === courtId) {
-          return { ...court, players: playersToAdd };
+    const court = courts.find(c => c.id === courtId);
+    const availableSlots = 4 - court.players.length;
+    const playersToAdd = selectedPlayers.slice(0, Math.min(parseInt(playerCountToAdd), availableSlots));
+
+    if (playersToAdd.length > 0) {
+      setCourts(courts.map(c => {
+        if (c.id === courtId) {
+          return { ...c, players: [...c.players, ...playersToAdd] };
         }
-        return court;
+        return c;
       }));
-      setQueue(newQueue);
+
+      setQueue(queue.filter(player => !playersToAdd.includes(player)));
+      setSelectedPlayers([]);
     }
+  };
+
+  const handlePlayerSelection = (player) => {
+    setSelectedPlayers(prev => 
+      prev.includes(player) 
+        ? prev.filter(p => p !== player)
+        : [...prev, player]
+    );
   };
 
   return (
@@ -134,11 +150,34 @@ const Index = () => {
           <CardTitle>Queue</CardTitle>
         </CardHeader>
         <CardContent>
-          <ol>
+          <div className="mb-4">
+            <Label htmlFor="playerCountSelect">Players to add:</Label>
+            <Select
+              id="playerCountSelect"
+              value={playerCountToAdd}
+              onValueChange={setPlayerCountToAdd}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select number of players" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="2">2 Players</SelectItem>
+                <SelectItem value="4">4 Players</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <ul>
             {queue.map((player, index) => (
-              <li key={index}>{player}</li>
+              <li key={index} className="flex items-center space-x-2 mb-2">
+                <Checkbox
+                  id={`queue-player-${index}`}
+                  checked={selectedPlayers.includes(player)}
+                  onCheckedChange={() => handlePlayerSelection(player)}
+                />
+                <label htmlFor={`queue-player-${index}`}>{player}</label>
+              </li>
             ))}
-          </ol>
+          </ul>
         </CardContent>
       </Card>
     </div>
