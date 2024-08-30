@@ -34,20 +34,23 @@ const Index = () => {
     return Object.values(court.checkedPlayers).filter(Boolean).length;
   };
 
+  const sortQueue = (updatedQueue) => {
+    return updatedQueue.sort((a, b) => {
+      const statsA = playerStats[a] || 0;
+      const statsB = playerStats[b] || 0;
+      if (statsA === statsB) {
+        return playerTimestamps[a] - playerTimestamps[b];
+      }
+      return statsA - statsB;
+    });
+  };
+
   const addPlayerToQueue = () => {
     if (playerName.trim() !== '') {
       const timestamp = Date.now();
       const updatedQueue = [...queue, playerName];
       setPlayerTimestamps(prev => ({...prev, [playerName]: timestamp}));
-      const sortedQueue = updatedQueue.sort((a, b) => {
-        const statsA = playerStats[a] || 0;
-        const statsB = playerStats[b] || 0;
-        if (statsA === statsB) {
-          return playerTimestamps[a] - playerTimestamps[b];
-        }
-        return statsA - statsB;
-      });
-      setQueue(sortedQueue);
+      setQueue(sortQueue(updatedQueue));
       setPlayerStats(prev => ({...prev, [playerName]: 0}));
       setPlayerName('');
     }
@@ -80,21 +83,14 @@ const Index = () => {
             });
             return newTimestamps;
           });
-          return updatedQueue.sort((a, b) => {
-            const statsA = playerStats[a] || 0;
-            const statsB = playerStats[b] || 0;
-            if (statsA === statsB) {
-              return playerTimestamps[a] - playerTimestamps[b];
-            }
-            return statsA - statsB;
+          setPlayerStats(prev => {
+            const newStats = {...prev};
+            removedPlayers.forEach(player => {
+              newStats[player] = (newStats[player] || 0) + 1;
+            });
+            return newStats;
           });
-        });
-        setPlayerStats(prev => {
-          const newStats = {...prev};
-          removedPlayers.forEach(player => {
-            newStats[player] = (newStats[player] || 0) + 1;
-          });
-          return newStats;
+          return sortQueue(updatedQueue);
         });
         return { ...court, players: remainingPlayers, checkedPlayers: {} };
       }
@@ -123,7 +119,10 @@ const Index = () => {
         return c;
       }));
 
-      setQueue(queue.filter(player => !playersToAdd.includes(player)));
+      setQueue(prevQueue => {
+        const updatedQueue = prevQueue.filter(player => !playersToAdd.includes(player));
+        return sortQueue(updatedQueue);
+      });
       setSelectedPlayers([]);
     }
   };
@@ -139,14 +138,7 @@ const Index = () => {
   const removePlayerFromQueue = (playerToRemove) => {
     setQueue(prevQueue => {
       const updatedQueue = prevQueue.filter(player => player !== playerToRemove);
-      return updatedQueue.sort((a, b) => {
-        const statsA = playerStats[a] || 0;
-        const statsB = playerStats[b] || 0;
-        if (statsA === statsB) {
-          return playerTimestamps[a] - playerTimestamps[b];
-        }
-        return statsA - statsB;
-      });
+      return sortQueue(updatedQueue);
     });
     setSelectedPlayers(prevSelected => prevSelected.filter(player => player !== playerToRemove));
     setPlayerStats(prev => {
