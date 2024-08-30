@@ -33,26 +33,23 @@ const Index = () => {
     return Object.values(court.checkedPlayers).filter(Boolean).length;
   };
 
-  const sortQueue = (updatedQueue) => {
+  const sortQueue = (updatedQueue, currentStats, currentTimestamps) => {
     return updatedQueue.sort((a, b) => {
-      const statsA = playerStats[a]?.completed || 0;
-      const statsB = playerStats[b]?.completed || 0;
+      const statsA = currentStats[a]?.completed || 0;
+      const statsB = currentStats[b]?.completed || 0;
       if (statsA === 0 && statsB === 0) {
-        return playerTimestamps[a] - playerTimestamps[b];
+        return currentTimestamps[a] - currentTimestamps[b];
       }
       if (statsA === 0) return -1;
       if (statsB === 0) return 1;
       if (statsA !== statsB) {
         return statsA - statsB;
       }
-      return playerTimestamps[a] - playerTimestamps[b];
+      return currentTimestamps[a] - currentTimestamps[b];
     });
   };
 
-  const updateQueueAndSort = (updatedQueue) => {
-    const sortedQueue = sortQueue(updatedQueue);
-    setQueue(sortedQueue);
-  };
+  // Remove updateQueueAndSort function as it's no longer needed
 
   const addPlayerToQueue = () => {
     if (playerName.trim().length >= 2) {
@@ -78,53 +75,56 @@ const Index = () => {
   };
 
   const removePlayersFromCourt = (courtId, count) => {
-    setCourts(courts.map(court => {
-      if (court.id === courtId) {
-        let removedPlayers;
-        let remainingPlayers;
-        if (count === 2) {
-          const checkedIndices = Object.entries(court.checkedPlayers)
-            .filter(([_, isChecked]) => isChecked)
-            .map(([index]) => parseInt(index));
-          removedPlayers = checkedIndices.map(index => court.players[index]);
-          remainingPlayers = court.players.filter((_, index) => !checkedIndices.includes(index));
-        } else {
-          removedPlayers = court.players.slice(0, count);
-          remainingPlayers = court.players.slice(count);
+    setCourts(prevCourts => {
+      const updatedCourts = prevCourts.map(court => {
+        if (court.id === courtId) {
+          let removedPlayers;
+          let remainingPlayers;
+          if (count === 2) {
+            const checkedIndices = Object.entries(court.checkedPlayers)
+              .filter(([_, isChecked]) => isChecked)
+              .map(([index]) => parseInt(index));
+            removedPlayers = checkedIndices.map(index => court.players[index]);
+            remainingPlayers = court.players.filter((_, index) => !checkedIndices.includes(index));
+          } else {
+            removedPlayers = court.players.slice(0, count);
+            remainingPlayers = court.players.slice(count);
+          }
+
+          return { ...court, players: remainingPlayers, checkedPlayers: {} };
         }
+        return court;
+      });
 
-        const currentTime = Date.now();
-        setPlayerStats(prev => {
-          const newStats = {...prev};
-          removedPlayers.forEach(player => {
-            newStats[player] = {
-              completed: (newStats[player]?.completed || 0) + 1,
-              current: 0
-            };
-          });
-          remainingPlayers.forEach(player => {
-            newStats[player] = {
-              ...newStats[player],
-              current: 2
-            };
-          });
-          return newStats;
+      const removedPlayers = updatedCourts.find(c => c.id === courtId).players;
+      const currentTime = Date.now();
+
+      setPlayerStats(prevStats => {
+        const newStats = {...prevStats};
+        removedPlayers.forEach(player => {
+          newStats[player] = {
+            completed: (newStats[player]?.completed || 0) + 1,
+            current: 0
+          };
         });
+        return newStats;
+      });
 
-        setPlayerTimestamps(prev => {
-          const newTimestamps = {...prev};
-          removedPlayers.forEach((player, index) => {
-            newTimestamps[player] = currentTime + index;
-          });
-          return newTimestamps;
+      setPlayerTimestamps(prevTimestamps => {
+        const newTimestamps = {...prevTimestamps};
+        removedPlayers.forEach((player, index) => {
+          newTimestamps[player] = currentTime + index;
         });
+        return newTimestamps;
+      });
 
-        updateQueueAndSort([...queue, ...removedPlayers]);
+      setQueue(prevQueue => {
+        const updatedQueue = [...prevQueue, ...removedPlayers];
+        return sortQueue(updatedQueue);
+      });
 
-        return { ...court, players: remainingPlayers, checkedPlayers: {} };
-      }
-      return court;
-    }));
+      return updatedCourts;
+    });
   };
 
   const addPlayersToCourt = (courtId) => {
