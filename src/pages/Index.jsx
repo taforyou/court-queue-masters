@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Trash2 } from "lucide-react";
 
 const Index = () => {
   const [courts, setCourts] = useState([
@@ -84,6 +85,11 @@ const Index = () => {
         ? prev.filter(p => p !== player)
         : [...prev, player]
     );
+  };
+
+  const removePlayerFromQueue = (playerToRemove) => {
+    setQueue(prevQueue => prevQueue.filter(player => player !== playerToRemove));
+    setSelectedPlayers(prevSelected => prevSelected.filter(player => player !== playerToRemove));
   };
 
   return (
@@ -174,7 +180,15 @@ const Index = () => {
                   checked={selectedPlayers.includes(player)}
                   onCheckedChange={() => handlePlayerSelection(player)}
                 />
-                <label htmlFor={`queue-player-${index}`}>{player}</label>
+                <label htmlFor={`queue-player-${index}`} className="flex-grow">{player}</label>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removePlayerFromQueue(player)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </li>
             ))}
           </ul>
