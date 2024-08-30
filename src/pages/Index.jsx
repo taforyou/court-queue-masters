@@ -13,6 +13,7 @@ const Index = () => {
     { id: 2, players: [], checkedPlayers: {} },
   ]);
   const [queue, setQueue] = useState([]);
+  const [playerStats, setPlayerStats] = useState({});
   const [playerName, setPlayerName] = useState('');
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [playerCountToAdd, setPlayerCountToAdd] = useState(2);
@@ -35,6 +36,7 @@ const Index = () => {
   const addPlayerToQueue = () => {
     if (playerName.trim() !== '') {
       setQueue([...queue, playerName]);
+      setPlayerStats(prev => ({...prev, [playerName]: 0}));
       setPlayerName('');
     }
   };
@@ -55,6 +57,13 @@ const Index = () => {
           remainingPlayers = court.players.slice(count);
         }
         setQueue(prevQueue => [...prevQueue, ...removedPlayers]);
+        setPlayerStats(prev => {
+          const newStats = {...prev};
+          removedPlayers.forEach(player => {
+            newStats[player] = (newStats[player] || 0) + 1;
+          });
+          return newStats;
+        });
         return { ...court, players: remainingPlayers, checkedPlayers: {} };
       }
       return court;
@@ -98,6 +107,11 @@ const Index = () => {
   const removePlayerFromQueue = (playerToRemove) => {
     setQueue(prevQueue => prevQueue.filter(player => player !== playerToRemove));
     setSelectedPlayers(prevSelected => prevSelected.filter(player => player !== playerToRemove));
+    setPlayerStats(prev => {
+      const newStats = {...prev};
+      delete newStats[playerToRemove];
+      return newStats;
+    });
   };
 
   return (
@@ -186,7 +200,12 @@ const Index = () => {
                   checked={selectedPlayers.includes(player)}
                   onCheckedChange={() => handlePlayerSelection(player)}
                 />
-                <label htmlFor={`queue-player-${index}`} className="flex-grow">{player}</label>
+                <label htmlFor={`queue-player-${index}`} className="flex-grow flex items-center">
+                  {player}
+                  <span className={`ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${playerStats[player] > 0 ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'}`}>
+                    {playerStats[player] || 0}
+                  </span>
+                </label>
                 <Button
                   variant="ghost"
                   size="icon"
