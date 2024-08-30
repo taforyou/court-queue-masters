@@ -37,6 +37,11 @@ const Index = () => {
     return updatedQueue.sort((a, b) => {
       const statsA = playerStats[a]?.completed || 0;
       const statsB = playerStats[b]?.completed || 0;
+      if (statsA === 0 && statsB === 0) {
+        return playerTimestamps[a] - playerTimestamps[b];
+      }
+      if (statsA === 0) return -1;
+      if (statsB === 0) return 1;
       if (statsA !== statsB) {
         return statsA - statsB;
       }
@@ -88,6 +93,7 @@ const Index = () => {
           remainingPlayers = court.players.slice(count);
         }
 
+        const currentTime = Date.now();
         setPlayerStats(prev => {
           const newStats = {...prev};
           removedPlayers.forEach(player => {
@@ -103,6 +109,14 @@ const Index = () => {
             };
           });
           return newStats;
+        });
+
+        setPlayerTimestamps(prev => {
+          const newTimestamps = {...prev};
+          removedPlayers.forEach((player, index) => {
+            newTimestamps[player] = currentTime + index;
+          });
+          return newTimestamps;
         });
 
         updateQueueAndSort([...queue, ...removedPlayers]);
