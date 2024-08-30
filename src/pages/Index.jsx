@@ -168,12 +168,12 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen p-8 bg-gray-100">
-      <h1 className="text-4xl font-bold mb-8 text-center">Badminton Match Manager</h1>
-      
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Join Queue</h2>
-        <div className="flex space-x-2">
+    <div className="min-h-screen p-4 sm:p-8 bg-gray-100">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-center">Badminton Match Manager</h1>
+  
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Join Queue</h2>
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <Input
             type="text"
             value={playerName}
@@ -182,11 +182,11 @@ const Index = () => {
             placeholder="Enter your name (min 2 characters)"
             className="flex-grow"
           />
-          <Button onClick={addPlayerToQueue} disabled={playerName.trim().length < 2}>Join Queue</Button>
+          <Button onClick={addPlayerToQueue} disabled={playerName.trim().length < 2} className="w-full sm:w-auto">Join Queue</Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-6 sm:gap-8">
         {courts.map((court) => (
           <Card key={court.id}>
             <CardHeader>
@@ -208,17 +208,18 @@ const Index = () => {
                   ))}
                 </ul>
               </div>
-              <div className="space-x-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   onClick={() => removePlayersFromCourt(court.id, 2)}
                   disabled={getCheckedPlayersCount(court) !== 2}
+                  className="flex-grow sm:flex-grow-0"
                 >
                   Remove 2 Players
                 </Button>
-                <Button onClick={() => removePlayersFromCourt(court.id, 4)}>
+                <Button onClick={() => removePlayersFromCourt(court.id, 4)} className="flex-grow sm:flex-grow-0">
                   Remove All Players
                 </Button>
-                <Button onClick={() => addPlayersToCourt(court.id)}>
+                <Button onClick={() => addPlayersToCourt(court.id)} className="flex-grow sm:flex-grow-0">
                   Add Players from Queue
                 </Button>
               </div>
@@ -227,28 +228,29 @@ const Index = () => {
         ))}
       </div>
 
-      <Card className="mt-8">
+      <Card className="mt-6 sm:mt-8">
         <CardHeader>
           <CardTitle>Queue</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-4">
             <Label>Players to add:</Label>
-            <div className="flex space-x-2 mt-2">
+            <div className="flex flex-wrap gap-2 mt-2">
               {[1, 2, 3, 4].map((count) => (
                 <Button
                   key={count}
                   variant={playerCountToAdd === count ? "default" : "outline"}
                   onClick={() => setPlayerCountToAdd(count)}
+                  className="flex-grow sm:flex-grow-0"
                 >
                   {count} Player{count !== 1 ? 's' : ''}
                 </Button>
               ))}
             </div>
           </div>
-          <ul>
+          <ul className="space-y-2">
             {queue.map((player, index) => (
-              <li key={index} className="flex items-center space-x-2 mb-2">
+              <li key={index} className="flex items-center space-x-2">
                 <Checkbox
                   id={`queue-player-${index}`}
                   checked={selectedPlayers.includes(player)}
