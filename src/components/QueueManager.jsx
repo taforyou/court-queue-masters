@@ -18,13 +18,35 @@ const QueueManager = ({ queue, setQueue, playerStats, shuttlecockCount, selected
 
   const addPlayerToQueue = async () => {
     if (playerName.trim().length >= 2) {
-      // Add player to Supabase
-      const { data: newPlayer } = await addPlayer.mutateAsync({ name: playerName });
-      await addToQueue.mutateAsync({ player_id: newPlayer[0].id });
+      try {
+        // Check if player already exists
+        const existingPlayer = supabasePlayers?.find(p => p.name.toLowerCase() === playerName.trim().toLowerCase());
+        
+        let newPlayerId;
+        if (existingPlayer) {
+          newPlayerId = existingPlayer.id;
+        } else {
+          // Add player to Supabase
+          const { data: newPlayer, error } = await addPlayer.mutateAsync({ name: playerName.trim() });
+          if (error) throw error;
+          newPlayerId = newPlayer[0].id;
+        }
 
-      // Update local state
-      setQueue(prevQueue => [...prevQueue, { id: newPlayer[0].id, name: playerName }]);
-      setPlayerName('');
+        // Add to queue
+        const { error: queueError } = await addToQueue.mutateAsync({ player_id: newPlayerId });
+        if (queueError) throw queueError;
+
+        // Update local state
+        setQueue(prevQueue => [...prevQueue, { id: newPlayerId, name: playerName.trim() }]);
+        setPlayerName('');
+      } catch (error) {
+        console.error("Error adding player to queue:", error);
+        toast({
+          title: "Error",
+          description: error.message || "Failed to add player to queue",
+          variant: "destructive",
+        });
+      }
     } else {
       toast({
         title: "Invalid Name",
@@ -49,15 +71,25 @@ const QueueManager = ({ queue, setQueue, playerStats, shuttlecockCount, selected
   };
 
   const removePlayerFromQueue = async (playerToRemove) => {
-    // Remove from Supabase
-    const queueItemId = supabaseQueue.find(q => q.player_id === playerToRemove.id)?.id;
-    if (queueItemId) {
-      await deleteFromQueue.mutateAsync(queueItemId);
-    }
+    try {
+      // Remove from Supabase
+      const queueItem = supabaseQueue?.find(q => q.player_id === playerToRemove.id);
+      if (queueItem) {
+        const { error } = await deleteFromQueue.mutateAsync(queueItem.id);
+        if (error) throw error;
+      }
 
-    // Update local state
-    setQueue(prevQueue => prevQueue.filter(player => player.id !== playerToRemove.id));
-    setSelectedPlayers(prevSelected => prevSelected.filter(player => player.id !== playerToRemove.id));
+      // Update local state
+      setQueue(prevQueue => prevQueue.filter(player => player.id !== playerToRemove.id));
+      setSelectedPlayers(prevSelected => prevSelected.filter(player => player.id !== playerToRemove.id));
+    } catch (error) {
+      console.error("Error removing player from queue:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove player from queue",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

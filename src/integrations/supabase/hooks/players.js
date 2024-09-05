@@ -3,7 +3,12 @@ import { supabase } from '../supabase';
 
 const fromSupabase = async (query) => {
     const { data, error } = await query;
-    if (error) throw new Error(error.message);
+    if (error) {
+        if (error.code === '23505') {
+            throw new Error('A player with this name already exists.');
+        }
+        throw new Error(error.message);
+    }
     return data;
 };
 
@@ -25,7 +30,21 @@ export const usePlayers = () => useQuery({
 export const useAddPlayer = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (newPlayer) => fromSupabase(supabase.from('players').insert([newPlayer])),
+        mutationFn: async (newPlayer) => {
+            // Check if player already exists
+            const { data: existingPlayers } = await supabase
+                .from('players')
+                .select('id')
+                .eq('name', newPlayer.name)
+                .limit(1);
+
+            if (existingPlayers && existingPlayers.length > 0) {
+                return existingPlayers[0];
+            }
+
+            // If player doesn't exist, insert new player
+            return fromSupabase(supabase.from('players').insert([newPlayer]).select());
+        },
         onSuccess: () => {
             queryClient.invalidateQueries('players');
         },
