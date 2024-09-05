@@ -19,16 +19,12 @@ const Index = () => {
     setCourts(prevCourts => {
       const updatedCourts = prevCourts.map(court => {
         if (court.id === courtId) {
-          const playerCount = court.players.length;
-          if (playerCount === 2 || playerCount === 4) {
-            const increment = playerCount === 2 ? 0.5 : 0.25;
-            court.players.forEach(player => {
-              setShuttlecockCount(prevCount => ({
-                ...prevCount,
-                [player]: (prevCount[player] || 0) + increment
-              }));
-            });
-          }
+          court.players.forEach(player => {
+            setShuttlecockCount(prevCount => ({
+              ...prevCount,
+              [player]: (prevCount[player] || 0) + 1
+            }));
+          });
         }
         return court;
       });
@@ -268,7 +264,7 @@ const Index = () => {
         {courts.map((court) => (
           <Card key={court.id}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-2xl font-semibold">Court {court.id}</CardTitle>
+              <CardTitle className="text-xl font-semibold">Court {court.id}</CardTitle>
               <div className="flex items-center space-x-2">
                 <Feather className="h-4 w-4 text-gray-500" />
                 <Button
@@ -276,7 +272,6 @@ const Index = () => {
                   size="icon"
                   className="h-8 w-8 rounded-full"
                   onClick={() => incrementShuttlecockCount(court.id)}
-                  disabled={court.players.length !== 2 && court.players.length !== 4}
                 >
                   <PlusCircle className="h-4 w-4 text-green-500" />
                 </Button>
@@ -299,7 +294,7 @@ const Index = () => {
                       <div className="flex items-center space-x-2">
                         <div className="flex flex-col items-center">
                           <Feather className="h-4 w-4 text-gray-500" />
-                          <span className="text-xs text-gray-500">{shuttlecockCount[player]?.toFixed(2) || '0.00'}</span>
+                          <span className="text-xs text-gray-500">{shuttlecockCount[player] || 0}</span>
                         </div>
                         <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
                           playerStats[player]?.current === 2
